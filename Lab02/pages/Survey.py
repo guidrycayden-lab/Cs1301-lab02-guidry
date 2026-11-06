@@ -5,6 +5,10 @@ import streamlit as st
 import pandas as pd
 import os # The 'os' module is used for file system operations (e.g. checking if a file exists).
 
+# Folder that holds data.csv (one level up from this pages folder)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CSV_FILE = os.path.join(BASE_DIR, "data.csv")
+
 # PAGE CONFIGURATION
 st.set_page_config(
     page_title="Survey",
@@ -37,17 +41,19 @@ with st.form("survey_form"):
             st.error("Please fill in both boxes.")
         else:
             try:
-                value = float(value)  
+                value = float(value)
             except ValueError:
                 st.error("The value must be a number, like 7 or 7.5.")
             else:
+                # Make sure the file ends with a new line before adding a row
                 needs_newline = False
-                if os.path.exists("data.csv") and os.path.getsize("data.csv") > 0:
-                    with open("data.csv", "rb") as f:
+                if os.path.exists(CSV_FILE) and os.path.getsize(CSV_FILE) > 0:
+                    with open(CSV_FILE, "rb") as f:
                         f.seek(-1, os.SEEK_END)
                         needs_newline = f.read(1) != b"\n"
 
-                with open("data.csv", "a") as f:
+                # Append the new row to data.csv
+                with open(CSV_FILE, "a") as f:
                     if needs_newline:
                         f.write("\n")
                     f.write(f"{category},{value}\n")
@@ -62,9 +68,9 @@ st.divider() # Adds a horizontal line for visual separation.
 st.header("Current Data in CSV")
 
 # Check if the CSV file exists and is not empty before trying to read it.
-if os.path.exists('data.csv') and os.path.getsize('data.csv') > 0:
+if os.path.exists(CSV_FILE) and os.path.getsize(CSV_FILE) > 0:
     # Read the CSV file into a pandas DataFrame.
-    current_data_df = pd.read_csv('data.csv')
+    current_data_df = pd.read_csv(CSV_FILE)
     # Display the DataFrame as a table.
     st.dataframe(current_data_df)
 else:
