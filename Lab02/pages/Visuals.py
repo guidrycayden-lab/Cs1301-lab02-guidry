@@ -1,11 +1,15 @@
 # This creates the page for displaying data visualizations.
 
 import json
+import os
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import os
 
+# Folder that holds data.json and data.csv (one level up from this pages folder)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+JSON_FILE = os.path.join(BASE_DIR, "data.json")
+CSV_FILE = os.path.join(BASE_DIR, "data.csv")
 
 # PAGE CONFIGURATION
 st.set_page_config(
@@ -21,7 +25,7 @@ st.title("Data Visualizations 📈")
 # --- YOUR CODE GOES HERE ---
 
 # Load the JSON data
-infile = open("data.json")
+infile = open(JSON_FILE)
 myData = json.load(infile)
 
 st.header(myData["chart_title"])
@@ -54,8 +58,8 @@ st.line_chart(races, x="race", y=st.session_state.event)
 # --- YOUR CODE GOES HERE ---
 st.header("Survey Results")
 
-if os.path.exists("data.csv") and os.path.getsize("data.csv") > 0:
-    survey = pd.read_csv("data.csv")
+if os.path.exists(CSV_FILE) and os.path.getsize(CSV_FILE) > 0:
+    survey = pd.read_csv(CSV_FILE)
     survey["value"] = pd.to_numeric(survey["value"], errors="coerce")
 else:
     survey = pd.DataFrame(columns=["category", "value"])
@@ -63,6 +67,7 @@ else:
 if survey.empty:
     st.info("No survey responses yet. Fill out the Survey page first!")
 else:
+    # STATIC: pie chart of favorite events (advanced chart, Plotly)
     st.subheader("Favorite Events")
     counts = survey["category"].value_counts().reset_index()
     counts.columns = ["Event", "Responses"]
@@ -74,6 +79,7 @@ else:
     )
     st.plotly_chart(fig3)
 
+    # DYNAMIC: bar chart that changes with a slider (uses session state)
     st.subheader("Who Gets Enough Sleep?")
 
     if "min_sleep" not in st.session_state:
